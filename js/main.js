@@ -34,8 +34,6 @@ let photos = [];
 
 
 const render = () => {
-    console.log(photos);
-
     const root = $('#root');
     root.innerHTML = '';
 
@@ -56,6 +54,7 @@ const render = () => {
             NAME,
             COLS,
             ROWS,
+            READ_ONLY,
         } = PhotoLibraryManagerAttribute;
 
         const FIXED_IMAGE_HEIGHT = 250;
@@ -119,10 +118,11 @@ const render = () => {
             const annotateButtonId = `annotate-button-js-${id}`;
             const annotateButtonElement = createElement(LINK);
             annotateButtonElement.setAttribute(ID, annotateButtonId);
-            annotateButtonElement.setAttribute(HREF, '#');
-            favoriteButtonElement.setAttribute('data-has-note', hasNote);
+            annotateButtonElement.setAttribute(HREF, `#${photoId}`);
+            annotateButtonElement.setAttribute('data-photo-id', id);
+            annotateButtonElement.setAttribute('data-mode', 'new');
             annotateButtonElement.innerText = 'Anotar';
-            annotateButtonElement.addEventListener('click', annotate);
+            annotateButtonElement.addEventListener('click', handleAnnotation);
             
             const removeButtonId = `remove-button-js-${id}`;
             const removeButtonElement = createElement(LINK);
@@ -141,8 +141,8 @@ const render = () => {
             photoNoteElement.setAttribute(NAME, 'photo-note');
             photoNoteElement.setAttribute(COLS, FIXED_TEXTAREA_COLS);
             photoNoteElement.setAttribute(ROWS, FIXED_TEXTAREA_ROWS);
+            photoNoteElement.setAttribute(READ_ONLY, true);
             photoNoteElement.innerText = note;
-            // photoNoteElement.classList.add('hide');
 
             photoControlElement.appendChild(photoElement);
         
@@ -192,32 +192,50 @@ const handlerFavorite = (event) => {
     render();
 };
 
-const annotate = (event) => {
+const handleAnnotation = (event) => {
     event.stopPropagation();
     
     const button = event.target;
 
-    const { hasNote } = button.dataset;
-            
-    console.log(hasNote);
-    // photos = photos.map(photo => {
+    const { 
+        photoId,
+        mode
+    } = button.dataset;
+    
+    const photoNoteIdSelector = `#photo-note-js-${photoId}`;
+    const photoNoteAreaElement = $(photoNoteIdSelector);
 
-    //     const { id } = photo;
+    const textNote = photoNoteAreaElement.value;
+    const hasNoteOnTextArea = textNote.length > 0;
 
-    //     let isFavorite = photo.isFavorite;
+    if (!hasNoteOnTextArea || mode === 'edit') {
 
-    //     if (id === Number(photoId)) {
-    //         isFavorite = !isFavorite;
-    //     }
+        photoNoteAreaElement.readOnly = false;
+        button.innerText = 'Salvar';
+        button.setAttribute('data-mode', 'draft');
 
-    //     return new Photo({
-    //         ...photo,
-    //         isFavorite
-    //     });
+    } else {
 
-    // });
-        
-    // render();
+        photos = photos.map(photo => {
+
+            const { id } = photo;
+
+            let note = photo.note;
+
+            if (id === Number(photoId)) {
+                note = textNote;
+            }
+    
+            return new Photo({
+                ...photo,
+                note
+            });
+        });
+
+        photoNoteAreaElement.readOnly = true;
+        button.setAttribute('data-mode', 'edit');
+        button.innerText = 'Anotar';
+    }
 };
 
 const remove = (event) => {

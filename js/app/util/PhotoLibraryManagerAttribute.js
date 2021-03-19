@@ -8,6 +8,7 @@ const HEIGHT = 'height';
 const WIDTH = 'width';
 const COLS = 'cols';
 const ROWS = 'rows';
+const READ_ONLY = 'readOnly';
 
 class PhotoLibraryManagerAttribute {
 
@@ -49,5 +50,9 @@ class PhotoLibraryManagerAttribute {
 
     static get ROWS() {
         return ROWS;
+    }
+
+    static get READ_ONLY() {
+        return READ_ONLY;
     }
 }
